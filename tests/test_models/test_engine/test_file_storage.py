@@ -11,7 +11,7 @@ from models.city import City
 from models.amenity import Amenity
 from models.place import Place
 from models.review import Review
-from models.engine.file_storage import FileStorage
+from tests.test_models.test_engine.test_file_storage.py import FileStorage
 
 
 class TestFileStorage(unittest.TestCase):
