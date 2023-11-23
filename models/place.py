@@ -84,7 +84,7 @@ class Place(BaseModel, Base):
             for review in models.storage.all(Review).values():
                 if review.place_id == self.id:
                     reviews_list.append(review)
-            return(reviews_list)
+            return (reviews_list)
 
         @property
         def amenities(self):
