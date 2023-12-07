@@ -1,47 +1,38 @@
 #!/usr/bin/env bash
-# script to install and setup nginx
-CONFIG_FILE="/etc/nginx/sites-available/default"
-HOST_NAME=$(hostname)
-MY_ID=496
+# Sets up a web server for deployment of web_static.
 
-# check if hostname is correct
-if [[ $(hostname) =~ ^$MY_ID-web-[0-9]+ ]]; then
-    echo 'hostname properly configured'
-else
-    (>&2 echo 'hostname not configured properly...')
-    (>&2 echo 'please set hostname to pattern: 496-web-<server_id>...')
-    (>&2 echo 'Example: sudo hostnamectl set-hostname 496-web-<insert_server_id_here>')
-fi
+apt-get update
+apt-get install -y nginx
 
-# install nginx
-apt-get -y update
-apt-get -y install nginx
+mkdir -p /data/web_static/releases/test/
+mkdir -p /data/web_static/shared/
+echo "Holberton School" > /data/web_static/releases/test/index.html
+ln -sf /data/web_static/releases/test/ /data/web_static/current
 
-# update index.html file
-echo 'Holberton School' > /usr/share/nginx/html/index.html
-echo "Ceci n'est pas une page" > /usr/share/nginx/html/404.html
+chown -R ubuntu /data/
+chgrp -R ubuntu /data/
 
-# update config file to redirect
 printf %s "server {
-    listen 80;
+    listen 80 default_server;
     listen [::]:80 default_server;
-    root   /usr/share/nginx/html;
+    add_header X-Served-By $HOSTNAME;
+    root   /var/www/html;
     index  index.html index.htm;
 
-    add_header X-Served-By $HOST_NAME;
+    location /hbnb_static {
+        alias /data/web_static/current;
+        index index.html index.htm;
+    }
 
     location /redirect_me {
-        return 301 http://google.com/;
+        return 301 http://cuberule.com/;
     }
 
     error_page 404 /404.html;
     location /404 {
-      root /usr/share/nginx/html;
+      root /var/www/html;
       internal;
     }
-}" > $CONFIG_FILE
+}" > /etc/nginx/sites-available/default
 
-# start nginx after reloading config
-service nginx start
-# if nginx was already running restart it
 service nginx restart
